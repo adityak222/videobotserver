@@ -14,9 +14,9 @@ app = FastAPI()
 
 # --- 1. CONFIGURATION ---
 cloudinary.config( 
-  cloud_name = "YOUR_CLOUD_NAME", 
-  api_key = "YOUR_API_KEY", 
-  api_secret = "YOUR_API_SECRET" 
+  cloud_name = "domigpf5l", 
+  api_key = "749381894976826", 
+  api_secret = "XZP26wOlIsVfHatfEi4cMw70-54" 
 )
 
 # SETUP GEMINI AI (THE STORY WRITER)
