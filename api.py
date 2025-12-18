@@ -9,6 +9,7 @@ from moviepy import AudioFileClip, VideoFileClip
 from deep_translator import GoogleTranslator
 import requests
 import google.generativeai as genai  # <--- NEW IMPORT
+import sys
 
 app = FastAPI()
 
