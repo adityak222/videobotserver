@@ -5,7 +5,7 @@ import random
 import cloudinary
 import cloudinary.uploader
 import edge_tts
-from moviepy.editor import AudioFileClip, VideoFileClip
+from moviepy import AudioFileClip, VideoFileClip
 from deep_translator import GoogleTranslator
 import requests
 import google.generativeai as genai  # <--- NEW IMPORT
