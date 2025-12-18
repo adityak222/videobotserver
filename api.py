@@ -20,7 +20,7 @@ cloudinary.config(
 )
 
 # SETUP GEMINI AI (THE STORY WRITER)
-GENAI_API_KEY = "PASTE_GOOGLE_API_KEY_HERE" # <--- PASTE KEY HERE
+GENAI_API_KEY = "AIzaSyCrZeiVNGdhhFXQJchQ1GuJSyCpaUS6z6I" # <--- PASTE KEY HERE
 genai.configure(api_key=GENAI_API_KEY)
 model = genai.GenerativeModel('gemini-pro')
 
