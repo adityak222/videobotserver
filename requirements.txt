@@ -7,3 +7,4 @@ cloudinary
 requests
 deep-translator
 imageio-ffmpeg
+google-generativeai   
