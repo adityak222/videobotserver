@@ -25,6 +25,26 @@ GENAI_API_KEY = "AIzaSyCrZeiVNGdhhFXQJchQ1GuJSyCpaUS6z6I" # <--- PASTE KEY HERE
 genai.configure(api_key=GENAI_API_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
+@app.get("/debug_gemini")
+def debug_gemini():
+    import google.generativeai as genai
+    import sys
+    
+    try:
+        # Get all models that support generation
+        model_list = []
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                model_list.append(m.name)
+                
+        return {
+            "python_version": sys.version,
+            "google_genai_version": genai.__version__,
+            "available_models": model_list
+        }
+    except Exception as e:
+        return {"error": str(e), "version": genai.__version__}
+
 # --- 2. THE AI STORY GENERATOR ---
 def get_ai_story():
     print("🤖 Asking Gemini to write a story...")
