@@ -69,8 +69,7 @@ def translate_to_hindi(text):
         return GoogleTranslator(source='auto', target='hi').translate(text)
     except: return text
 
-# --- 3. API ENDPOINT ---
-# --- FINAL STABLE VERSION (With Timeout Protection) ---
+# --- HYPER-FAST MODE (Designed for Render Free Tier) ---
 @app.post("/generate")
 async def generate_media(
     story_mode: str = Form(...),       
@@ -96,50 +95,47 @@ async def generate_media(
         audio_file = f"temp_{random.randint(1000,9999)}.mp3"
         await edge_tts.Communicate(text, voice).save(audio_file)
 
-        # 3. VIDEO PROCESSING
         if output_format == "audio":
             url = cloudinary.uploader.upload(audio_file, resource_type="video")['secure_url']
             os.remove(audio_file)
             return {"status": "success", "url": url, "type": "audio"}
 
-        # Resolve Background Path
+        # 3. VIDEO PROCESSING
         bg_path = "assets/minecraft.mp4"
         if background_choice == "upload" and background_file:
             bg_path = f"temp_bg_{random.randint(1000,9999)}.mp4"
             with open(bg_path, "wb") as f: shutil.copyfileobj(background_file.file, f)
         
-        # --- THE SAFETY FIX ---
-        print("🎬 Editing Video (Speed Mode)...")
+        print("🎬 Editing Video (Hyper-Fast Mode)...")
         audio = AudioFileClip(audio_file)
-        video = VideoFileClip(bg_path)
-
-        # CAP DURATION: Max 50 seconds to prevent Server Timeout
-        # If the story is longer, the video cuts off (perfect for Shorts Part 1)
-        final_duration = min(audio.duration, 50) 
         
-        # Loop video if shorter than audio
+        # OPTIMIZATION 1: Load video with reduced target resolution immediately
+        # 480p (Height 854) is much faster than 720p or 1080p
+        video = VideoFileClip(bg_path, target_resolution=(854, 480))
+
+        # OPTIMIZATION 2: Cap Duration at 45 seconds (Safe Zone)
+        final_duration = min(audio.duration, 45) 
+        
         if video.duration < final_duration:
             video = video.loop(duration=final_duration)
         
-        # Create Final Clip
         final = video.subclipped(0, final_duration).with_audio(audio.subclipped(0, final_duration))
 
-        # Resize & Crop (720p is faster than 1080p)
-        final = final.resized(height=1280)
+        # Crop to 9:16
         w, h = final.size
         if w/h > 9/16:
             final = final.cropped(x_center=w/2, width=h*(9/16), height=h)
         
         out_name = f"final_{random.randint(1000,9999)}.mp4"
         
-        # WRITE FILE (Ultrafast preset is key for free servers)
+        # OPTIMIZATION 3: Low FPS and Ultrafast Preset
         final.write_videofile(
             out_name, 
             codec='libx264', 
             audio_codec='aac', 
-            fps=24, 
-            preset="ultrafast",  # <--- MAKES IT 5x FASTER
-            threads=1
+            fps=15,               # <--- 15 FPS IS VERY FAST TO RENDER
+            preset="ultrafast",   # <--- SACRIFICE COMPRESSION FOR SPEED
+            threads=2             # <--- USE MULTIPLE CORES
         )
 
         print("☁️ Uploading...")
@@ -154,6 +150,4 @@ async def generate_media(
 
     except Exception as e:
         print(f"❌ ERROR: {str(e)}")
-        # Return the error to the phone so you can see it!
-        # We return a dummy URL so the app doesn't crash, but logged the error
-        return {"status": "error", "url": "", "type": "error", "message": str(e)}
+        return {"status": "error", "message": str(e)}
