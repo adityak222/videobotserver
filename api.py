@@ -26,18 +26,42 @@ STOCK_VIDEOS = {
 SUBREDDIT = "Glitch_in_the_Matrix" 
 
 # --- 2. HELPERS ---
+# --- UPDATED HELPER FUNCTION ---
 def get_automated_story():
     print(f"🕵️ Fetching story from r/{SUBREDDIT}...")
-    url = f"https://www.reddit.com/r/{SUBREDDIT}/top.json?limit=25&t=week"
-    headers = {'User-Agent': 'Mozilla/5.0'}
+    
+    # 1. Try fetching from Reddit
     try:
-        response = requests.get(url, headers=headers)
-        posts = response.json()['data']['children']
-        valid = [p['data'] for p in posts if not p['data'].get('over_18') and 200 < len(p['data']['selftext']) < 1500]
-        if not valid: return None
-        post = random.choice(valid)
-        return f"{post['title']}. {post['selftext']}"
-    except: return None
+        url = f"https://www.reddit.com/r/{SUBREDDIT}/top.json?limit=10&t=week"
+        # We use a very specific User-Agent to try to trick Reddit
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+        
+        response = requests.get(url, headers=headers, timeout=5) # 5 second timeout
+        
+        if response.status_code == 200:
+            posts = response.json().get('data', {}).get('children', [])
+            valid = [p['data'] for p in posts if not p['data'].get('over_18') and 200 < len(p['data'].get('selftext', '')) < 1500]
+            
+            if valid:
+                post = random.choice(valid)
+                print(f"✅ Reddit Success: {post['title'][:30]}...")
+                return f"{post['title']}. {post['selftext']}"
+        else:
+            print(f"⚠️ Reddit Blocked Us (Status: {response.status_code}). Switching to Backup.")
+
+    except Exception as e:
+        print(f"⚠️ Reddit Connection Failed: {e}. Switching to Backup.")
+
+    # 2. FALLBACK: The "Backup Story" (Use this if Reddit fails)
+    # This guarantees the app NEVER crashes with Error 500
+    print("✅ Using Backup Story.")
+    return (
+        "Let me tell you something that happened to me last night. "
+        "I live alone in a small apartment. Around 3 AM, I heard a knock on my window. "
+        "I live on the 7th floor. I froze, too scared to move. "
+        "The knocking stopped, but then I saw a flashlight beam sweep across my living room floor... from inside the hallway. "
+        "I realized the knocking wasn't coming from outside. It was a reflection. someone was standing right behind me."
+    )
 
 def translate_to_hindi(text):
     try:
